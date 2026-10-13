@@ -1,0 +1,1302 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Cori Invoice Review API",
+    "description": "Multi-agent first-pass invoice review for IAS. Cori advances invoices to the approval section or routes them to human review. Cori never approves payment.",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": [
+          "system"
+        ],
+        "summary": "Health",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Health"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/batches": {
+      "post": {
+        "tags": [
+          "batches"
+        ],
+        "summary": "Send invoices to Cori (the 'Send to Cori' button)",
+        "operationId": "create_batch_batches_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BatchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchAccepted"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "batches"
+        ],
+        "summary": "Recent batches",
+        "operationId": "list_batches_batches_get",
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                  },
+                  "title": "Response List Batches Batches Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/batches/{batch_id}": {
+      "get": {
+        "tags": [
+          "batches"
+        ],
+        "summary": "Get Batch",
+        "operationId": "get_batch_batches__batch_id__get",
+        "parameters": [
+          {
+            "name": "batch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Batch Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BatchStatus"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/invoices/upload": {
+      "post": {
+        "tags": [
+          "invoices"
+        ],
+        "summary": "Upload a PDF and register it as a PENDING invoice (demo)",
+        "operationId": "upload_invoice_invoices_upload_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_invoice_invoices_upload_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/invoices": {
+      "get": {
+        "tags": [
+          "invoices"
+        ],
+        "summary": "Uploaded invoices (pending and processed)",
+        "operationId": "list_invoices_invoices_get",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/InvoiceSummary"
+                  },
+                  "title": "Response List Invoices Invoices Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/invoices/{invoice_id}/decision": {
+      "get": {
+        "tags": [
+          "invoices"
+        ],
+        "summary": "Decision, reasons, consensus detail, flags and similar invoices",
+        "operationId": "get_decision_invoices__invoice_id__decision_get",
+        "parameters": [
+          {
+            "name": "invoice_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Invoice Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionOut"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/invoices/{invoice_id}/audit": {
+      "get": {
+        "tags": [
+          "invoices"
+        ],
+        "summary": "Full AGENT_RUNS audit trail",
+        "operationId": "get_audit_invoices__invoice_id__audit_get",
+        "parameters": [
+          {
+            "name": "invoice_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Invoice Id"
+            }
+          },
+          {
+            "name": "batch_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Batch Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": true
+                  },
+                  "title": "Response Get Audit Invoices  Invoice Id  Audit Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/invoices/{invoice_id}/feedback": {
+      "post": {
+        "tags": [
+          "invoices"
+        ],
+        "summary": "Record reviewer corrections and cleared flags",
+        "operationId": "post_feedback_invoices__invoice_id__feedback_post",
+        "parameters": [
+          {
+            "name": "invoice_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Invoice Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FeedbackRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FeedbackResult"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BatchAccepted": {
+        "properties": {
+          "batch_id": {
+            "type": "string",
+            "title": "Batch Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "invoice_count": {
+            "type": "integer",
+            "title": "Invoice Count"
+          }
+        },
+        "type": "object",
+        "required": [
+          "batch_id",
+          "status",
+          "invoice_count"
+        ],
+        "title": "BatchAccepted"
+      },
+      "BatchItem": {
+        "properties": {
+          "invoice_id": {
+            "type": "integer",
+            "title": "Invoice Id"
+          },
+          "file_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File Name"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "current_step": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Step"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          },
+          "decision": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decision"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary"
+          }
+        },
+        "type": "object",
+        "required": [
+          "invoice_id",
+          "status"
+        ],
+        "title": "BatchItem"
+      },
+      "BatchRequest": {
+        "properties": {
+          "invoice_ids": {
+            "items": {
+              "type": "integer"
+            },
+            "type": "array",
+            "minItems": 1,
+            "title": "Invoice Ids",
+            "examples": [
+              [
+                900001,
+                900002
+              ]
+            ]
+          },
+          "submitted_by": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Submitted By",
+            "examples": [
+              "jdoe"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "invoice_ids",
+          "submitted_by"
+        ],
+        "title": "BatchRequest"
+      },
+      "BatchStatus": {
+        "properties": {
+          "batch_id": {
+            "type": "string",
+            "title": "Batch Id"
+          },
+          "submitted_by": {
+            "type": "string",
+            "title": "Submitted By"
+          },
+          "submitted_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Submitted At"
+          },
+          "finished_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Finished At"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "invoice_count": {
+            "type": "integer",
+            "title": "Invoice Count"
+          },
+          "processed": {
+            "type": "integer",
+            "title": "Processed"
+          },
+          "decision_counts": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Decision Counts"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/BatchItem"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "batch_id",
+          "submitted_by",
+          "submitted_at",
+          "status",
+          "invoice_count",
+          "processed",
+          "decision_counts",
+          "items"
+        ],
+        "title": "BatchStatus"
+      },
+      "Body_upload_invoice_invoices_upload_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_upload_invoice_invoices_upload_post"
+      },
+      "DecisionOut": {
+        "properties": {
+          "invoice_id": {
+            "type": "integer",
+            "title": "Invoice Id"
+          },
+          "file_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File Name"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "description": "Current IAS status of the invoice"
+          },
+          "decision": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decision",
+            "description": "ADVANCED_TO_APPROVAL | NEEDS_REVIEW | null if not processed"
+          },
+          "batch_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Batch Id"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Summary",
+            "description": "Cori's plain-language summary"
+          },
+          "decided_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decided At"
+          },
+          "reasons": {
+            "items": {
+              "$ref": "#/components/schemas/ReasonOut"
+            },
+            "type": "array",
+            "title": "Reasons"
+          },
+          "invoice": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/InvoiceFieldsOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "fx": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/FxOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "consensus": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Consensus",
+            "description": "Field status and side-by-side disagreements"
+          },
+          "extractions": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Extractions"
+          },
+          "validation_checks": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Validation Checks"
+          },
+          "anomaly": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Anomaly",
+            "description": "Flags, baseline (base + native currency), similar invoices"
+          },
+          "feedback": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Feedback"
+          }
+        },
+        "type": "object",
+        "required": [
+          "invoice_id",
+          "status"
+        ],
+        "title": "DecisionOut"
+      },
+      "FeedbackRequest": {
+        "properties": {
+          "reviewer": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Reviewer"
+          },
+          "corrections": {
+            "items": {
+              "$ref": "#/components/schemas/FieldCorrection"
+            },
+            "type": "array",
+            "title": "Corrections"
+          },
+          "cleared_flags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Cleared Flags",
+            "examples": [
+              [
+                "COLD_START_BASELINE"
+              ]
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "reviewer"
+        ],
+        "title": "FeedbackRequest"
+      },
+      "FeedbackResult": {
+        "properties": {
+          "invoice_id": {
+            "type": "integer",
+            "title": "Invoice Id"
+          },
+          "feedback_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Feedback Ids"
+          }
+        },
+        "type": "object",
+        "required": [
+          "invoice_id",
+          "feedback_ids"
+        ],
+        "title": "FeedbackResult"
+      },
+      "FieldCorrection": {
+        "properties": {
+          "field_name": {
+            "type": "string",
+            "title": "Field Name",
+            "examples": [
+              "total_amount"
+            ]
+          },
+          "agent_value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Agent Value",
+            "examples": [
+              "4250.00"
+            ]
+          },
+          "corrected_value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Corrected Value",
+            "examples": [
+              "4520.00"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "field_name"
+        ],
+        "title": "FieldCorrection"
+      },
+      "FxOut": {
+        "properties": {
+          "rate": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rate",
+            "description": "Rate used for the base-currency conversion",
+            "examples": [
+              "1.078860731"
+            ]
+          },
+          "rate_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rate Date",
+            "description": "Date of the rate (invoice date or nearest prior date)"
+          },
+          "pair": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pair",
+            "examples": [
+              "EUR->USD"
+            ]
+          }
+        },
+        "type": "object",
+        "title": "FxOut"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "Health": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "database": {
+            "type": "string",
+            "title": "Database"
+          },
+          "db_backend": {
+            "type": "string",
+            "title": "Db Backend"
+          },
+          "llm_provider": {
+            "type": "string",
+            "title": "Llm Provider"
+          },
+          "extractors": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Extractors"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "database",
+          "db_backend",
+          "llm_provider",
+          "extractors"
+        ],
+        "title": "Health"
+      },
+      "InvoiceFieldsOut": {
+        "properties": {
+          "vendor_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vendor Name"
+          },
+          "vendor_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Vendor Id"
+          },
+          "invoice_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Invoice Number"
+          },
+          "invoice_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Invoice Date"
+          },
+          "client_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Client Number"
+          },
+          "matter_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Matter Number"
+          },
+          "currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currency"
+          },
+          "currency_resolution": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currency Resolution"
+          },
+          "subtotal": {
+            "$ref": "#/components/schemas/MoneyOut"
+          },
+          "tax": {
+            "$ref": "#/components/schemas/MoneyOut"
+          },
+          "total": {
+            "$ref": "#/components/schemas/MoneyOut"
+          },
+          "total_base": {
+            "$ref": "#/components/schemas/MoneyOut"
+          },
+          "line_items": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Line Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "subtotal",
+          "tax",
+          "total",
+          "total_base"
+        ],
+        "title": "InvoiceFieldsOut"
+      },
+      "InvoiceSummary": {
+        "properties": {
+          "invoice_id": {
+            "type": "integer",
+            "title": "Invoice Id"
+          },
+          "file_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File Name"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "decision": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decision"
+          }
+        },
+        "type": "object",
+        "required": [
+          "invoice_id",
+          "file_name",
+          "status",
+          "created_at"
+        ],
+        "title": "InvoiceSummary"
+      },
+      "MoneyOut": {
+        "properties": {
+          "amount": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Amount",
+            "examples": [
+              "27790.31"
+            ]
+          },
+          "currency": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currency",
+            "examples": [
+              "EUR"
+            ]
+          },
+          "display": {
+            "type": "string",
+            "title": "Display",
+            "examples": [
+              "27,790.31 EUR"
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "display"
+        ],
+        "title": "MoneyOut",
+        "description": "Amounts are decimal strings (never floats) plus the ISO 4217 code."
+      },
+      "ReasonOut": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code",
+            "examples": [
+              "BANK_DETAILS_MISMATCH"
+            ]
+          },
+          "source": {
+            "type": "string",
+            "title": "Source",
+            "description": "extraction | consensus | validation | anomaly | guardrail | system"
+          },
+          "severity": {
+            "type": "string",
+            "title": "Severity",
+            "description": "LOW | MEDIUM | HIGH | INFO"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "blocking": {
+            "type": "boolean",
+            "title": "Blocking",
+            "description": "false = informational note that did not block advancement"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "source",
+          "severity",
+          "message",
+          "blocking"
+        ],
+        "title": "ReasonOut"
+      },
+      "UploadResult": {
+        "properties": {
+          "invoice_id": {
+            "type": "integer",
+            "title": "Invoice Id"
+          },
+          "file_name": {
+            "type": "string",
+            "title": "File Name"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "invoice_id",
+          "file_name",
+          "status"
+        ],
+        "title": "UploadResult"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

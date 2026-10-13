@@ -1,0 +1,48 @@
+# Oracle AI Database 26ai Free + the Cori API.
+#
+#   cp .env.example .env              # set ORACLE_PWD and the two user passwords
+#   docker compose up -d              # first start of Oracle takes a few minutes
+#   python scripts/run_demo.py        # on the host: creates users, migrates, seeds, runs all samples
+#   open http://localhost:8000        # demo UI (after: docker compose run --rm app python scripts/setup_demo.py)
+#
+# The official image's "latest" tag is Oracle AI Database 26ai Free (release
+# 23.26.x). Pin a specific tag for repeatable builds. Cori only uses SQL that
+# also runs on 23ai Free (VECTOR type, VECTOR_DISTANCE, IS JSON checks).
+
+services:
+  oracle:
+    image: container-registry.oracle.com/database/free:latest
+    container_name: cori-oracle
+    environment:
+      ORACLE_PWD: ${ORACLE_PWD:?set ORACLE_PWD in .env}
+    ports:
+      - "1521:1521"
+    volumes:
+      - oracle-data:/opt/oracle/oradata
+    healthcheck:
+      test: ["CMD", "/opt/oracle/checkDBStatus.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 20
+      start_period: 120s
+
+  app:
+    build: .
+    container_name: cori-app
+    env_file: .env
+    environment:
+      ORACLE_DSN: oracle:1521/FREEPDB1   # service name inside the compose network
+      DB_BACKEND: oracle
+      UPLOAD_DIR: /app/uploads
+    ports:
+      - "8000:8000"
+    volumes:
+      - uploads:/app/uploads
+      - ./sample_invoices:/app/sample_invoices
+    depends_on:
+      oracle:
+        condition: service_healthy
+
+volumes:
+  oracle-data:
+  uploads:

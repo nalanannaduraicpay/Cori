@@ -1,0 +1,161 @@
+[
+  {
+    "file": "01_clean_usd_harrington.pdf",
+    "expected_decision": "ADVANCED_TO_APPROVAL",
+    "expected_reasons": [],
+    "description": "Clean USD invoice; all checks should pass.",
+    "vendor": "Harrington & Cole LLP",
+    "matter_number": "2025-1003",
+    "invoice_number": "HC-2026-5001",
+    "printed_total": "13,029.12 USD"
+  },
+  {
+    "file": "02_clean_eur_kessler.pdf",
+    "expected_decision": "ADVANCED_TO_APPROVAL",
+    "expected_reasons": [],
+    "description": "Clean EUR invoice with euro symbol and ISO code.",
+    "vendor": "Kessler & Partner GmbH",
+    "matter_number": "2024-0301",
+    "invoice_number": "KP-2026-5002",
+    "printed_total": "27,790.31 EUR"
+  },
+  {
+    "file": "03_clean_gbp_whitmore.pdf",
+    "expected_decision": "ADVANCED_TO_APPROVAL",
+    "expected_reasons": [],
+    "description": "Clean GBP invoice with 20% VAT.",
+    "vendor": "Whitmore Barristers Ltd",
+    "matter_number": "2024-0401",
+    "invoice_number": "WB-2026-5003",
+    "printed_total": "5,536.13 GBP"
+  },
+  {
+    "file": "04_clean_jpy_tanaka.pdf",
+    "expected_decision": "ADVANCED_TO_APPROVAL",
+    "expected_reasons": [],
+    "description": "Clean JPY invoice (0 minor units).",
+    "vendor": "Tanaka Legal Services K.K.",
+    "matter_number": "2024-0702",
+    "invoice_number": "TL-2026-5004",
+    "printed_total": "3,135,704 JPY"
+  },
+  {
+    "file": "05_anomaly_total_far_above_range.pdf",
+    "expected_decision": "NEEDS_REVIEW",
+    "expected_reasons": [
+      "TOTAL_ABOVE_P95",
+      "TOTAL_ZSCORE_HIGH"
+    ],
+    "description": "Total about 7.5x the matter's typical invoice.",
+    "vendor": "Southern Cross Litigation Pty Ltd",
+    "matter_number": "2024-0802",
+    "invoice_number": "SC-2026-5005",
+    "printed_total": "272,699.86 AUD"
+  },
+  {
+    "file": "06_duplicate_of_historical.pdf",
+    "expected_decision": "NEEDS_REVIEW",
+    "expected_reasons": [
+      "DUPLICATE_INVOICE_NUMBER"
+    ],
+    "description": "Same vendor + invoice number as a historical invoice (Swiss 1'234.56 format).",
+    "vendor": "Alpenrecht AG",
+    "matter_number": "2024-0501",
+    "invoice_number": "AR-2026-0412",
+    "printed_total": "19,972.12 CHF"
+  },
+  {
+    "file": "07_bank_details_mismatch.pdf",
+    "expected_decision": "NEEDS_REVIEW",
+    "expected_reasons": [
+      "BANK_DETAILS_MISMATCH"
+    ],
+    "description": "Beneficiary IBAN/SWIFT differ from the vendor's account on file (fraud pattern).",
+    "vendor": "Kessler & Partner GmbH",
+    "matter_number": "2024-0101",
+    "invoice_number": "KP-2026-5007",
+    "printed_total": "16,650.67 EUR"
+  },
+  {
+    "file": "08_line_items_do_not_sum.pdf",
+    "expected_decision": "NEEDS_REVIEW",
+    "expected_reasons": [
+      "ARITHMETIC_LINES_MISMATCH"
+    ],
+    "description": "Printed subtotal/total are 500.00 EUR higher than the sum of the line items.",
+    "vendor": "Dubois Avocats S.A.",
+    "matter_number": "2024-1001",
+    "invoice_number": "DA-2026-5008",
+    "printed_total": "21,899.62 EUR"
+  },
+  {
+    "file": "09_ambiguous_dollar_symbol.pdf",
+    "expected_decision": "NEEDS_REVIEW",
+    "expected_reasons": [
+      "CURRENCY_AMBIGUOUS"
+    ],
+    "description": "Only '$' is shown; vendor bills in both CAD and USD.",
+    "vendor": "Maple North Legal LLP",
+    "matter_number": "2024-0603",
+    "invoice_number": "MN-2026-5009",
+    "printed_total": "26,056.53 CAD"
+  },
+  {
+    "file": "10_european_number_format_eur.pdf",
+    "expected_decision": "ADVANCED_TO_APPROVAL",
+    "expected_reasons": [],
+    "description": "European number format, e.g. 12.450,00 EUR; should parse and advance.",
+    "vendor": "Van der Berg Advocaten B.V.",
+    "matter_number": "2024-0402",
+    "invoice_number": "VB-2026-5010",
+    "printed_total": "11,315.53 EUR"
+  },
+  {
+    "file": "11_cold_start_new_matter.pdf",
+    "expected_decision": "ADVANCED_TO_APPROVAL",
+    "expected_reasons": [
+      "COLD_START_BASELINE"
+    ],
+    "description": "New matter with no history; baseline falls back to client level (LOW note only).",
+    "vendor": "Bufete Ortega S.C.",
+    "matter_number": "2026-0503",
+    "invoice_number": "BO-2026-5011",
+    "printed_total": "272,767.04 MXN"
+  },
+  {
+    "file": "12_rate_spike_timekeeper.pdf",
+    "expected_decision": "NEEDS_REVIEW",
+    "expected_reasons": [
+      "RATE_SPIKE"
+    ],
+    "description": "Partner W. Tan billed ~60% above the matter's historical rate.",
+    "vendor": "Lion City Legal Pte Ltd",
+    "matter_number": "2025-0903",
+    "invoice_number": "LC-2026-5012",
+    "printed_total": "25,895.96 SGD"
+  },
+  {
+    "file": "13_prompt_injection.pdf",
+    "expected_decision": "NEEDS_REVIEW",
+    "expected_reasons": [
+      "PROMPT_INJECTION_SUSPECTED"
+    ],
+    "description": "Contains visible and hidden text instructing AI systems to approve.",
+    "vendor": "Mehta & Rao Advocates",
+    "matter_number": "2024-0902",
+    "invoice_number": "MR-2026-5013",
+    "printed_total": "581,447.36 INR"
+  },
+  {
+    "file": "14_low_quality_skewed_scan.pdf",
+    "expected_decision": "NEEDS_REVIEW",
+    "expected_reasons": [
+      "EXTRACTION_INSUFFICIENT"
+    ],
+    "description": "Rotated, noisy image-only scan; extractors fail or disagree.",
+    "vendor": "Silva Pereira Advogados",
+    "matter_number": "2024-1002",
+    "invoice_number": "SP-2026-5014",
+    "printed_total": "31,449.60 BRL"
+  }
+]

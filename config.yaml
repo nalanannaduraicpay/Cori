@@ -1,0 +1,65 @@
+# Cori runtime configuration (non-secret). Secrets live in .env.
+
+base_currency: USD
+max_concurrent_invoices: 4
+
+extractors:
+  # provider/model "default" = LLM_PROVIDER and its model from .env.
+  # When LLM_PROVIDER=mock every extractor uses the offline mock provider.
+  extractor_a:
+    enabled: true
+    method: vision          # reads rendered page images
+    provider: default
+    model: default
+    prompt: extractor_vision.v1
+  extractor_b:
+    enabled: true
+    method: text            # pdfplumber text -> text LLM
+    provider: default
+    model: default
+    prompt: extractor_text.v1
+  extractor_c:
+    enabled: false          # optional third opinion: different provider/model
+    method: text
+    provider: anthropic
+    model: claude-opus-5-5
+    prompt: extractor_text_alt.v1
+
+consensus:
+  fuzzy_threshold: 90       # rapidfuzz score for vendor-name agreement
+  critical_fields:          # must be unanimous among successful extractors
+    - total_amount
+    - currency
+    - vendor_name
+    - invoice_number
+    - matter_number
+    - bank_account
+    - swift_bic
+  line_items_critical: true # line item count/amount mismatch blocks advancement
+
+validation:
+  duplicate_window_days: 30
+  max_invoice_age_days: 365
+  amount_tolerance_minor_units: 1
+
+anomaly:
+  percentile: 95
+  z_score: 3.0
+  cold_start_min: 5         # min invoices for a baseline level to be used
+  global_max_total_usd: 50000
+  rate_spike_pct: 30
+  frequency_window_days: 30
+  frequency_multiplier: 2.0
+  frequency_min_count: 3
+  similar_invoices_k: 5
+
+embeddings:
+  provider: local           # local (hashed bag-of-words, offline) | azure
+  dim: 384
+
+summary:
+  use_llm: true             # LLM writes the plain-language summary; routing is never LLM-driven
+
+pdf:
+  render_dpi: 150
+  max_pages: 5

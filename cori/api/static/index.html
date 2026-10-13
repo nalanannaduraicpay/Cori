@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Cori Invoice Review</title>
+  <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><span class="logo">IAS</span> Accounts Payable <span class="sep">/</span> Invoice intake</div>
+  <div class="health" id="health">checking…</div>
+</header>
+
+<main class="layout">
+  <section class="panel" id="pending-panel">
+    <div class="panel-head">
+      <h2>Uploaded invoices</h2>
+      <div class="actions">
+        <label class="btn secondary">Upload PDF<input type="file" id="upload" accept="application/pdf" multiple hidden></label>
+        <select id="filter">
+          <option value="PENDING">Pending</option>
+          <option value="">All uploads</option>
+        </select>
+        <button class="btn primary" id="send" disabled>Send to Cori</button>
+      </div>
+    </div>
+    <table class="grid" id="invoice-table">
+      <thead><tr><th><input type="checkbox" id="select-all"></th><th>ID</th><th>File</th><th>Status</th><th>Uploaded</th></tr></thead>
+      <tbody></tbody>
+    </table>
+    <p class="empty" id="empty" hidden>No invoices. Upload a PDF or run <code>python scripts/setup_demo.py</code>.</p>
+  </section>
+
+  <section class="panel" id="batch-panel" hidden>
+    <div class="panel-head">
+      <h2>Cori batch <span class="mono" id="batch-id"></span></h2>
+      <div class="batch-meta" id="batch-meta"></div>
+    </div>
+    <div class="progress"><div class="bar" id="batch-bar"></div></div>
+    <table class="grid" id="batch-table">
+      <thead><tr><th>ID</th><th>File</th><th>Progress</th><th>Decision</th><th></th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </section>
+
+  <section class="panel" id="detail-panel" hidden>
+    <div id="detail"></div>
+  </section>
+</main>
+
+<script src="/static/app.js"></script>
+</body>
+</html>
