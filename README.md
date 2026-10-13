@@ -20,7 +20,7 @@ Verified on 2026-10-13, Windows 11, Python 3.12, **Oracle AI Database 26ai Free 
 | `pytest` (unit + SQLite integration + API) | 177 passed, 14 skipped (Oracle opt-in, live LLM) |
 | `CORI_TEST_ORACLE=1 pytest -m oracle` | 8 passed (agent-user privileges, `VECTOR` column, full pipeline) |
 | Live LLM extraction (Azure OpenAI / Anthropic) | **Not run.** No API keys were available, so every run above used the deterministic `mock` provider (see [Known limitations](#known-limitations)). |
-| `docker compose up` | **Not run.** Docker is not installed on the build machine. The demo ran on a native Oracle 26ai Free install instead. |
+| `docker compose up` / GitHub Codespaces dev container | **Not run yet.** Docker is not installed on the build machine. The demo ran on a native Oracle 26ai Free install instead. |
 
 ---
 
@@ -57,6 +57,25 @@ docker compose run --rm app python scripts/setup_demo.py   # register samples (p
 `docker-compose.yml` uses `container-registry.oracle.com/database/free:latest`, which is Oracle AI Database 26ai Free (release 23.26.x). Pin a tag for repeatable builds. Cori only uses SQL that also runs on 23ai Free (`VECTOR`, `VECTOR_DISTANCE`, `IS JSON`).
 
 Uploaded files are stored by absolute path. Register invoices from the same side (host or container) that will process them.
+
+### C. GitHub Codespaces
+
+The repo includes a dev container (`.devcontainer/`) with Python 3.12 and a private Oracle AI Database 26ai Free container. Use a 4-core or larger machine; Oracle needs about 2 GB of RAM.
+
+1. On GitHub: **Code → Codespaces → Create codespace on main**. Setup installs the requirements and writes a `.env`:
+   * Oracle at `oracle:1521/FREEPDB1`
+   * random passwords for `CORI_OWNER` and `CORI_AGENT`
+   * `LLM_PROVIDER=mock`
+2. In the terminal:
+   ```bash
+   python scripts/wait_for_db.py      # the first Oracle start takes a few minutes
+   python scripts/run_demo.py         # creates the users as SYSTEM, migrates, seeds, runs all 14 samples
+   pytest                             # CORI_TEST_ORACLE=1 pytest -m oracle for the Oracle checks
+   python scripts/setup_demo.py && uvicorn cori.api.main:app --host 0.0.0.0 --port 8000
+   ```
+3. Open the forwarded port 8000 (Ports tab) for the demo UI.
+
+The container's Oracle password (`CoriDevOnly_2026`, in `.devcontainer/docker-compose.devcontainer.yml`) is a **dev-only value for a throwaway database** that only the codespace can reach. Don't reuse it anywhere. To use live LLMs, add `AZURE_OPENAI_API_KEY` / `AZURE_OPENAI_ENDPOINT` or `ANTHROPIC_API_KEY` as Codespaces secrets, and set `LLM_PROVIDER` in `.env`. Codespaces run Linux, so use `python ...` rather than `.venv\Scripts\python ...`.
 
 ### Other commands
 
@@ -327,4 +346,4 @@ These are demo shortcuts. They matter before production.
 * **Embeddings default to a local hashed bag-of-words** (no network). It works for "similar line items" in the demo but has no semantic understanding. Set `embeddings.provider: azure` for real embeddings, then re-seed so stored and query vectors match.
 * **FX rates are a mock random walk** around fixed centres. Replace `FX_RATES` with the treasury feed.
 * **Re-running `run_demo.py --no-seed`** re-uploads the same samples, and Cori correctly flags them as duplicates of the previous run. Use the default (reseed) for a clean comparison.
-* **`docker compose` has not been tested** on the build machine (no Docker). The Python code paths are the same ones verified natively.
+* **`docker compose` and the Codespaces dev container have not been run yet** (no Docker on the build machine). The Python code paths are the same ones verified natively. Expect the first codespace start to be the first real test of the container wiring.

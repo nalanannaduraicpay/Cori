@@ -1,0 +1,32 @@
+# Dev container services: the workspace (app) and a private Oracle Free database.
+# Oracle is reachable from the app container as oracle:1521/FREEPDB1 and is NOT
+# forwarded out of the codespace.
+
+services:
+  app:
+    image: mcr.microsoft.com/devcontainers/python:1-3.12-bookworm
+    volumes:
+      - ..:/workspaces/cori:cached
+    command: sleep infinity
+    depends_on:
+      - oracle
+
+  oracle:
+    # Oracle AI Database 26ai Free (release 23.26.x); same image as ../docker-compose.yml.
+    # Fallback if this registry is slow/unreachable: gvenzl/oracle-free:latest (Docker Hub).
+    image: container-registry.oracle.com/database/free:latest
+    environment:
+      # DEV-ONLY password for a throwaway database that only this codespace can reach.
+      # Never reuse it anywhere real. post-create.sh writes the same value into .env.
+      ORACLE_PWD: ${ORACLE_PWD:-CoriDevOnly_2026}
+    volumes:
+      - oracle-data:/opt/oracle/oradata
+    healthcheck:
+      test: ["CMD", "/opt/oracle/checkDBStatus.sh"]
+      interval: 30s
+      timeout: 10s
+      retries: 20
+      start_period: 120s
+
+volumes:
+  oracle-data:
