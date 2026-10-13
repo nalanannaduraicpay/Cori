@@ -61,6 +61,20 @@ def invoice():
     return make_invoice()
 
 
+@pytest.fixture(scope="session", autouse=True)
+def _isolated_samples_dir(tmp_path_factory):
+    """Demo setup regenerates the sample PDFs (dates are relative to today).
+    Point it at a temp dir so test runs never modify the committed
+    sample_invoices/ and always use samples generated for today."""
+    import cori.demo as demo
+    original = demo.SAMPLES_DIR
+    demo.SAMPLES_DIR = tmp_path_factory.mktemp("sample_invoices")
+    try:
+        yield demo.SAMPLES_DIR
+    finally:
+        demo.SAMPLES_DIR = original
+
+
 # ----------------------------------------------------------------------------
 # integration: throwaway SQLite database + generated sample PDFs
 # ----------------------------------------------------------------------------

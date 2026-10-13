@@ -248,7 +248,7 @@ RENDERERS = {"classic": render_classic, "modern": render_modern, "european": ren
 
 def render_pdf(spec: SampleSpec, values: dict) -> bytes:
     buf = io.BytesIO()
-    c = canvas.Canvas(buf, pagesize=A4)
+    c = canvas.Canvas(buf, pagesize=A4, invariant=1)  # no timestamps/random IDs: same day -> same bytes
     c.setTitle(f"Invoice {values['invoice_number']}")
     RENDERERS[spec.template](c, values, spec)
     c.showPage()
@@ -273,7 +273,7 @@ def degrade_to_scan(pdf_bytes: bytes, seed: str) -> bytes:
         px[x, y] = rng.choice((0, 90, 255))
     img = img.filter(ImageFilter.GaussianBlur(0.8))
     out = io.BytesIO()
-    c = canvas.Canvas(out, pagesize=A4)
+    c = canvas.Canvas(out, pagesize=A4, invariant=1)
     c.drawImage(ImageReader(img), 0, 0, width=A4[0], height=A4[1])
     c.showPage()
     c.save()
